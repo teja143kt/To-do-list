@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+    <div class="container px-2">
+        <main class="col-md-6 mx-auto mt-3">
+            <div id="feedback" class="alert alert-danger d-none" role="alert">
+                Please enter a task!
+            </div>
+            <form id="itemForm" class="my-3">
+                <h3 class="text-capitalize mb-4 text-center">To Do List</h3>
+                <div class="input-group">
+                    <input type="text" id="task" class="form-control text-capitalize border-success-subtle"
+                           placeholder="Enter a task..." aria-label="Task input">
+                    <button type="submit" id="add" class="btn btn-outline-success fw-semibold shadow-sm ms-2" aria-label="Add task">Add Task</button>
+                </div>
+                <ul class="list-group mt-3" id="list"></ul>
+            </form>
+        </main>
+    </div>
+    <script>
+        const form = document.getElementById("itemForm");
+        const taskInput = document.getElementById("task");
+        const taskList = document.getElementById("list");
+        const feedback = document.getElementById("feedback");
+
+        // Load tasks from localStorage on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.forEach(task => addTaskToList(task));
+        });
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault(); // Prevent page reload
+            const txt = taskInput.value.trim();
+
+            if (txt === "") {
+                feedback.classList.remove("d-none");
+                setTimeout(() => feedback.classList.add("d-none"), 3000); // Hide after 3s
+                return;
+            }
+
+            addTaskToList(txt);
+            saveTask(txt); // Save to localStorage
+            taskInput.value = "";
+        });
+
+        function addTaskToList(txt) {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `
+                <span>${txt}</span>
+                <div>
+                    <button class="btn btn-outline-info me-2 done" style="width:75px;" aria-label="Mark as done">Done</button>
+                    <button class="btn btn-outline-danger del" aria-label="Delete task">Delete</button>
+                </div>
+            `;
+            taskList.appendChild(li);
+
+            // Add event listeners for buttons
+            li.querySelector(".done").addEventListener("click", () => {
+                li.classList.toggle("list-group-item-success");
+            });
+
+            li.querySelector(".del").addEventListener("click", () => {
+                li.remove();
+                updateLocalStorage();
+            });
+        }
+
+        function saveTask(task) {
+            const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            tasks.push(task);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        function updateLocalStorage() {
+            const tasks = Array.from(taskList.querySelectorAll("span")).map(span => span.textContent);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+    </script>
+</body>
+</html>
